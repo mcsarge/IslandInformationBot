@@ -3,6 +3,8 @@ import logging
 import wget
 from zoneinfo import ZoneInfo
 import datetime
+from datetime import timedelta
+
 from sunrisesunset import SunriseSunset
 from functools import wraps
 from dotenv import load_dotenv
@@ -33,6 +35,27 @@ async def getImage(url, save_as):
         os.remove(save_as) # if exist, remove it directly
     wget.download(url, save_as)
 
+async def set_timer_tomorrow(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Add a job to the queue."""
+    try:
+
+        dt = datetime.datetime.now(tz=ZoneInfo("America/New_York")) + datetime.timedelta(hours=18)
+        rs = SunriseSunset(dt, lat=45.955490, lon=-81.179014, zenith='official')
+        rise_time, set_time = rs.sun_rise_set
+        print(f"      Sunset tomorrow: {set_time}")
+        print(f"             Is night: {rs.is_night()}\n")
+
+        job_removed = remove_job_if_exists(str(chat_id), context)
+        context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
+
+        print(f"Timer successfully set!")
+        if job_removed:
+            print(f" Old one was removed.")
+
+
+    except (IndexError, ValueError):
+        print(f"Error setting tomorrow sunset")
+
 
 async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send the alarm message."""
@@ -42,6 +65,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     save_as = './images/sunset.jpeg'
     await getImage(image_url, save_as)
     await context.bot.sendPhoto(chat_id=job.chat_id, photo=open(save_as, 'rb'))
+    await set_timer_tomorrow(job.chat_id, context)
 
 
 
@@ -67,7 +91,8 @@ async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         print(f"    Is night: {rs.is_night()}\n")
 
         job_removed = remove_job_if_exists(str(chat_id), context)
-        context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
+        #context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
+        context.job_queue.run_once(alarm, 15, chat_id=chat_id, name=str(chat_id), data=set_time)
 
         text = "Timer successfully set!"
         if job_removed:
@@ -139,7 +164,7 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("tower", tower_command))
     application.add_handler(CommandHandler("garden", garden_command))
-    application.add_handler(CommandHandler("set", set_timer))
+    application.add_handler(CommandHandler("sunset", set_timer))
     application.add_handler(CommandHandler("unset", unset))
 
     print("Island Information Bot instance started!")
