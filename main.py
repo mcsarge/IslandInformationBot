@@ -64,7 +64,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     image_url = 'http://192.168.0.157/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user=admin&password=aabbcc112233'
     save_as = './images/sunset.jpeg'
     await getImage(image_url, save_as)
-    await context.bot.sendPhoto(chat_id=job.chat_id, photo=open(save_as, 'rb'))
+    await context.bot.sendPhoto(chat_id=job.chat_id, photo=open(save_as, 'rb'), caption='Island Sunset')
     await set_timer_tomorrow(job.chat_id, context)
 
 
@@ -91,8 +91,8 @@ async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         print(f"    Is night: {rs.is_night()}\n")
 
         job_removed = remove_job_if_exists(str(chat_id), context)
-        #context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
-        context.job_queue.run_once(alarm, 15, chat_id=chat_id, name=str(chat_id), data=set_time)
+        context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
+        #context.job_queue.run_once(alarm, 15, chat_id=chat_id, name=str(chat_id), data=set_time)
 
         text = "Timer successfully set!"
         if job_removed:
@@ -145,14 +145,14 @@ async def tower_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     image_url = 'http://192.168.0.157/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user=admin&password=aabbcc112233'
     save_as = './images/tower.jpeg'
     await getImage(image_url, save_as)
-    await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(save_as, 'rb'))
+    await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(save_as, 'rb'), caption='Tower')
 
 @send_action(ChatAction.UPLOAD_PHOTO)
 async def garden_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     image_url = 'http://192.168.0.108/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user=admin&password=aabbcc112233'
     save_as = './images/garden.jpeg'
     await getImage(image_url, save_as)
-    await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(save_as, 'rb'))
+    await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(save_as, 'rb'), caption='Garden')
 
 def main():
     """
