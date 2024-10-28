@@ -43,6 +43,10 @@ async def set_timer_tomorrow(chat_id: int, context: ContextTypes.DEFAULT_TYPE) -
         rs = SunriseSunset(dt, lat=45.955490, lon=-81.179014, zenith='official')
         rise_time, set_time = rs.sun_rise_set
         print(f"      Sunset tomorrow: {set_time}")
+        # 1 minute before sunset
+        set_time = set_time - datetime.timedelta(minutes=1)
+
+        print(f"Sunset tomorrow-1 min: {set_time}")
         print(f"             Is night: {rs.is_night()}\n")
 
         job_removed = remove_job_if_exists(str(chat_id), context)
@@ -88,16 +92,28 @@ async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         rs = SunriseSunset(dt, lat=45.955490, lon=-81.179014, zenith='official')
         rise_time, set_time = rs.sun_rise_set
         print(f"      Sunset: {set_time}")
-        print(f"    Is night: {rs.is_night()}\n")
+        # 1 minutes before sunset
+        set_time = set_time - datetime.timedelta(minutes=1)
+        print(f"Sunset-1 minute: {set_time}")
+        print(f"       Is night: {rs.is_night()}\n")
 
-        job_removed = remove_job_if_exists(str(chat_id), context)
-        context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
-        #context.job_queue.run_once(alarm, 15, chat_id=chat_id, name=str(chat_id), data=set_time)
+        #check if the time for the sunset has already passed.
+        if set_time < dt:
+           #get tomorrows sunset and set it for then.
+           await set_timer_tomorrow(chat_id, context)
+           text += "Setting timer for tomrrow's sunset."
+           await update.effective_message.reply_text(text)
 
-        text = "Timer successfully set!"
-        if job_removed:
-            text += " Old one was removed."
-        await update.effective_message.reply_text(text)
+        else:
+           job_removed = remove_job_if_exists(str(chat_id), context)
+           context.job_queue.run_once(alarm, set_time, chat_id=chat_id, name=str(chat_id), data=set_time)
+           #context.job_queue.run_once(alarm, 15, chat_id=chat_id, name=str(chat_id), data=set_time)
+
+           text = "Timer successfully set!"
+
+           if job_removed:
+               text += " Old one was removed."
+           await update.effective_message.reply_text(text)
 
     except (IndexError, ValueError):
         await update.effective_message.reply_text("Usage: /set <seconds>")
