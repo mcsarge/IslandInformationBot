@@ -1,0 +1,14 @@
+services:
+  islandinformationbot:
+    container_name: islandinformationbot
+    image: islandinformationbot
+    restart: unless-stopped
+    build: ../github/IslandInformationBot
+    environment:
+    - TZ=America/New_York
+    - BOT_TOKEN=
+    - HEALTHCHECKS_ENDPOINT=
+    - FILE=/data/output.txt
+    volumes:
+    - ./volumes/classic_client:/data
+
