@@ -22,8 +22,8 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+#dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+#load_dotenv(dotenv_path)
 
 if os.getenv("HEALTHCHECKS_ENDPOINT"):
     HealthPing(url=os.getenv("HEALTHCHECKS_ENDPOINT"),
@@ -116,7 +116,7 @@ async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
            await update.effective_message.reply_text(text)
 
     except (IndexError, ValueError):
-        await update.effective_message.reply_text("Usage: /set <seconds>")
+        await update.effective_message.reply_text("Usage: /set <seconds>", quote=False)
 
 
 async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -170,6 +170,25 @@ async def garden_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await getImage(image_url, save_as)
     await context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(save_as, 'rb'), caption='Garden')
 
+
+@send_action(ChatAction.TYPING)
+async def power_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    lines = ''
+    if os.getenv("FILE"):
+      try:
+        with open(os.getenv("FILE"),'r') as file:
+          while line := file.readline():
+            lines = lines + line.replace('\\n','\n')
+          file.close()
+        await update.message.reply_text(lines)
+      except:
+        await update.message.reply_text("No power file present.")
+
+    else:
+      await update.message.reply_text("No power file (FILE) defined.")
+
+
+
 def main():
     """
     Handles the initial launch of the program (entry point).
@@ -180,6 +199,7 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("tower", tower_command))
     application.add_handler(CommandHandler("garden", garden_command))
+    application.add_handler(CommandHandler("power", power_command))
     application.add_handler(CommandHandler("sunset", set_timer))
     application.add_handler(CommandHandler("unset", unset))
 
