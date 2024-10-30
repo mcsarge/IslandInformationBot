@@ -146,7 +146,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
     await update.message.reply_html(
-        rf"Hi {user.mention_html()}!, I can respond to your commands. Type /garden or /tower to see a picture.",
+        rf"Hi {user.mention_html()}!, I can respond to your commands. Type /garden, /tower, /power or /weather to get information.",
         reply_markup=ForceReply(selective=True),
     )
 
@@ -155,7 +155,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Send a message when the command /help is issued."""
     user = update.effective_user
     await update.message.reply_text(
-        rf"Hi {user.first_name}!, I can respond to your commands. Type /garden or /tower to see a picture.")
+        rf"Hi {user.mention_html()}!, I can respond to your commands. Type /garden, /tower, /power or /weather to get information.",
 
 @send_action(ChatAction.UPLOAD_PHOTO)
 async def tower_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -207,10 +207,10 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
        data = resp.json()
 
        lines =          'Outdoor Temp = ' + str(data[0]['lastData']['tempf']) + ' F\n'
-       lines = lines +  'Outdoor Hum = ' + str(data[0]['lastData']['humidity']) + ' %\n'
-       lines = lines +  'Wind speed = ' + str(data[0]['lastData']['windspeedmph']) + ' mph\n'
-       lines = lines +  'Wind gust = ' + str(data[0]['lastData']['windgustmph']) + ' mph\n'
-       lines = lines +  'Wind direction = ' + str(data[0]['lastData']['winddir']) + '\n'
+       lines = lines +  'Outdoor Humidity = ' + str(data[0]['lastData']['humidity']) + ' %\n'
+       lines = lines +  'Wind Speed = ' + str(data[0]['lastData']['windspeedmph']) + ' mph\n'
+       lines = lines +  'Wind Gust = ' + str(data[0]['lastData']['windgustmph']) + ' mph\n'
+       lines = lines +  'Wind Direction = ' + str(data[0]['lastData']['winddir']) + '\n'
        lines = lines +  'Solar Radiation = ' + str(data[0]['lastData']['solarradiation']) + ' W/m2\n'
 
        await update.message.reply_text(lines)
