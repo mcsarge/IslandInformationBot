@@ -1,6 +1,7 @@
 import os
 import logging
 import wget
+import requests
 from zoneinfo import ZoneInfo
 import datetime
 from datetime import timedelta
@@ -188,6 +189,35 @@ async def power_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
       await update.message.reply_text("No power file (FILE) defined.")
 
 
+@send_action(ChatAction.TYPING)
+async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    weather_url = 'https://rt.ambientweather.net/v1/devices'
+
+    if os.getenv("AMB_API_KEY"):
+       params = dict(
+          applicationKey=os.getenv("AMB_APP_KEY"),
+          apiKey=os.getenv("AMB_API_KEY")
+       )
+       try:
+          resp = requests.get(url=weather_url, params=params)
+       except:
+          await update.message.reply_text('Error fetching weather data.')
+          return
+
+       data = resp.json()
+
+       lines =          'Outdoor Temp = ' + str(data[0]['lastData']['tempf']) + ' F\n'
+       lines = lines +  'Outdoor Hum = ' + str(data[0]['lastData']['humidity']) + ' %\n'
+       lines = lines +  'Wind speed = ' + str(data[0]['lastData']['windspeedmph']) + ' mph\n'
+       lines = lines +  'Wind gust = ' + str(data[0]['lastData']['windgustmph']) + ' mph\n'
+       lines = lines +  'Wind direction = ' + str(data[0]['lastData']['winddir']) + '\n'
+       lines = lines +  'Solar Radiation = ' + str(data[0]['lastData']['solarradiation']) + ' W/m2\n'
+
+       await update.message.reply_text(lines)
+    else:
+       await update.message.reply_text('Ambient Weather not set up.')
+
+
 
 def main():
     """
@@ -200,6 +230,7 @@ def main():
     application.add_handler(CommandHandler("tower", tower_command))
     application.add_handler(CommandHandler("garden", garden_command))
     application.add_handler(CommandHandler("power", power_command))
+    application.add_handler(CommandHandler("weather", weather_command))
     application.add_handler(CommandHandler("sunset", set_timer))
     application.add_handler(CommandHandler("unset", unset))
 
